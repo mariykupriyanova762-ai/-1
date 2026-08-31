@@ -1,0 +1,1109 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+
+  <!-- Чтобы приложение нормально выглядело на телефоне -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Мои личные расходы</title>
+
+  <!--
+    Сразу применяем сохранённую тему,
+    чтобы страница не мигала светлым фоном
+    до загрузки основного скрипта.
+  -->
+  <script>
+    if (localStorage.getItem("theme") === "dark") {
+      document.documentElement.classList.add("dark");
+    }
+  </script>
+
+  <style>
+
+    /* =========================
+       ОБЩИЕ НАСТРОЙКИ
+       ========================= */
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      color-scheme: light;
+    }
+
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: Arial, sans-serif;
+
+      background-color: #f3f5f7;
+      color: #333333;
+
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+
+    /* =========================
+       ОСНОВНОЙ КОНТЕЙНЕР
+       ========================= */
+
+    .container {
+      max-width: 650px;
+      margin: 30px auto;
+    }
+
+    .site-nav {
+      margin-bottom: 16px;
+    }
+
+    .home-link {
+      display: inline-block;
+      color: #4f7cff;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .home-link:hover {
+      text-decoration: underline;
+    }
+
+    html.dark .home-link {
+      color: #7b9cff;
+    }
+
+
+    /* =========================
+       КАРТОЧКА ПРИЛОЖЕНИЯ
+       ========================= */
+
+    .card {
+      background-color: #ffffff;
+      border-radius: 16px;
+      padding: 25px;
+
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+
+      transition: background-color 0.3s;
+    }
+
+
+    /* =========================
+       ЗАГОЛОВОК
+       ========================= */
+
+    h1 {
+      text-align: center;
+      margin-top: 0;
+      margin-bottom: 25px;
+      font-size: 32px;
+    }
+
+
+    /* =========================
+       ГРУППЫ ПОЛЕЙ
+       ========================= */
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: bold;
+    }
+
+
+    /* =========================
+       ПОЛЯ ВВОДА
+       ========================= */
+
+    input,
+    select {
+      width: 100%;
+      padding: 12px;
+
+      font-size: 16px;
+
+      border: 1px solid #cccccc;
+      border-radius: 8px;
+
+      background-color: #ffffff;
+      color: #333333;
+
+      transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+    }
+
+    input:focus,
+    select:focus {
+      outline: none;
+      border-color: #4f7cff;
+    }
+
+
+    /* =========================
+       КНОПКА "ДОБАВИТЬ РАСХОД"
+       ========================= */
+
+    .add-button {
+      width: 100%;
+      padding: 14px;
+      margin-top: 5px;
+
+      border: none;
+      border-radius: 8px;
+
+      background-color: #4f7cff;
+      color: #ffffff;
+
+      font-size: 17px;
+      font-weight: bold;
+
+      cursor: pointer;
+    }
+
+    .add-button:hover {
+      background-color: #3d68e6;
+    }
+
+
+    /* =========================
+       БЛОК С ИТОГАМИ
+       ========================= */
+
+    .totals {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+
+      gap: 12px;
+
+      margin-top: 25px;
+      margin-bottom: 25px;
+    }
+
+    .total-box {
+      background-color: #f7f8fa;
+
+      border-radius: 10px;
+
+      padding: 15px;
+
+      text-align: center;
+
+      transition: background-color 0.3s;
+    }
+
+    .total-title {
+      font-size: 14px;
+      color: #666666;
+      margin-bottom: 7px;
+    }
+
+    .total-amount {
+      font-size: 22px;
+      font-weight: bold;
+    }
+
+
+    /* =========================
+       ЗАГОЛОВОК СПИСКА
+       ========================= */
+
+    h2 {
+      margin-top: 10px;
+      font-size: 22px;
+    }
+
+
+    /* =========================
+       СПИСОК РАСХОДОВ
+       ========================= */
+
+    .expense-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .expense-item {
+      display: flex;
+
+      justify-content: space-between;
+      align-items: center;
+
+      gap: 15px;
+
+      padding: 14px;
+
+      background-color: #f7f8fa;
+
+      border-radius: 10px;
+
+      transition: background-color 0.3s;
+    }
+
+    .expense-info {
+      flex: 1;
+    }
+
+    .expense-category {
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+
+    .expense-details {
+      color: #666666;
+      font-size: 14px;
+    }
+
+
+    /* =========================
+       КНОПКА "УДАЛИТЬ"
+       ========================= */
+
+    .delete-button {
+      border: none;
+
+      background-color: #e85d5d;
+      color: #ffffff;
+
+      padding: 9px 12px;
+
+      border-radius: 7px;
+
+      cursor: pointer;
+    }
+
+    .delete-button:hover {
+      background-color: #cf4949;
+    }
+
+
+    /* =========================
+       ТЕКСТ, ЕСЛИ РАСХОДОВ НЕТ
+       ========================= */
+
+    .empty-message {
+      text-align: center;
+      color: #888888;
+      padding: 20px 0;
+    }
+
+
+    /* =========================
+       КНОПКА СМЕНЫ ТЕМЫ
+       ПРАВЫЙ НИЖНИЙ УГОЛ
+       ========================= */
+
+    .theme-button {
+      position: fixed;
+
+      right: 20px;
+      bottom: 20px;
+
+      width: 56px;
+      height: 56px;
+
+      border: none;
+      border-radius: 50%;
+
+      background-color: #222222;
+      color: #ffffff;
+
+      font-size: 25px;
+
+      cursor: pointer;
+
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+
+      z-index: 1000;
+
+      transition:
+        background-color 0.3s,
+        color 0.3s,
+        transform 0.2s;
+    }
+
+    .theme-button:hover {
+      transform: scale(1.06);
+    }
+
+
+    /* =========================
+       ТЁМНАЯ ТЕМА
+
+       Класс dark вешается на <html>,
+       поэтому стили работают сразу
+       после загрузки страницы.
+       ========================= */
+
+    html.dark {
+      color-scheme: dark;
+    }
+
+    html.dark body {
+      background-color: #121826;
+      color: #e8eef7;
+    }
+
+    html.dark .card {
+      background-color: #1b2434;
+
+      box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45);
+    }
+
+    html.dark input,
+    html.dark select {
+      background-color: #243044;
+      color: #f3f6fb;
+      border-color: #3d4f66;
+    }
+
+    html.dark input:focus,
+    html.dark select:focus {
+      border-color: #7b9cff;
+    }
+
+    html.dark .add-button {
+      background-color: #5c86ff;
+    }
+
+    html.dark .add-button:hover {
+      background-color: #4a74ef;
+    }
+
+    html.dark .total-box,
+    html.dark .expense-item {
+      background-color: #243044;
+    }
+
+    html.dark .total-title,
+    html.dark .expense-details {
+      color: #a9b6c9;
+    }
+
+    html.dark .empty-message {
+      color: #8d9bb0;
+    }
+
+    html.dark .delete-button {
+      background-color: #d66767;
+    }
+
+    html.dark .delete-button:hover {
+      background-color: #c45555;
+    }
+
+    html.dark .theme-button {
+      background-color: #f4d37a;
+      color: #2a2416;
+    }
+
+
+    /* =========================
+       ВЕРСИЯ ДЛЯ ТЕЛЕФОНА
+       ========================= */
+
+    @media (max-width: 500px) {
+
+      body {
+        padding: 10px;
+      }
+
+      .container {
+        margin: 10px auto;
+      }
+
+      .card {
+        padding: 18px;
+      }
+
+      h1 {
+        font-size: 27px;
+      }
+
+      .totals {
+        grid-template-columns: 1fr;
+      }
+
+      .expense-item {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .delete-button {
+        width: 100%;
+      }
+
+      .theme-button {
+        width: 50px;
+        height: 50px;
+
+        right: 15px;
+        bottom: 15px;
+
+        font-size: 22px;
+      }
+    }
+
+  </style>
+</head>
+
+
+<body>
+
+  <!-- =========================
+       ОСНОВНОЕ ПРИЛОЖЕНИЕ
+       ========================= -->
+
+  <div class="container">
+
+    <div class="card">
+
+      <nav class="site-nav">
+        <a class="home-link" href="index.html">← На главную</a>
+      </nav>
+
+      <!-- Название приложения -->
+      <h1>Мои личные расходы</h1>
+
+
+      <!-- Поле для суммы -->
+      <div class="form-group">
+
+        <label for="amount">
+          Сумма расхода
+        </label>
+
+        <input
+          type="number"
+          id="amount"
+          placeholder="Например: 500"
+          min="0.01"
+          step="0.01"
+        >
+
+      </div>
+
+
+      <!-- Выбор категории -->
+      <div class="form-group">
+
+        <label for="category">
+          Категория
+        </label>
+
+        <select id="category">
+
+          <option value="Еда">Еда</option>
+          <option value="Дом">Дом</option>
+          <option value="Транспорт">Транспорт</option>
+          <option value="Обучение">Обучение</option>
+          <option value="Развлечения">Развлечения</option>
+          <option value="Другое">Другое</option>
+
+        </select>
+
+      </div>
+
+
+      <!-- Выбор даты -->
+      <div class="form-group">
+
+        <label for="date">
+          Дата
+        </label>
+
+        <input
+          type="date"
+          id="date"
+        >
+
+      </div>
+
+
+      <!-- Кнопка добавления -->
+      <button
+        class="add-button"
+        id="addButton"
+      >
+        Добавить расход
+      </button>
+
+
+      <!-- Итоговые суммы -->
+      <div class="totals">
+
+        <div class="total-box">
+
+          <div class="total-title">
+            Расходы сегодня
+          </div>
+
+          <div
+            class="total-amount"
+            id="todayTotal"
+          >
+            0 ₽
+          </div>
+
+        </div>
+
+
+        <div class="total-box">
+
+          <div class="total-title">
+            Расходы за последние 7 дней
+          </div>
+
+          <div
+            class="total-amount"
+            id="weekTotal"
+          >
+            0 ₽
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <!-- Список расходов -->
+      <h2>Список расходов</h2>
+
+      <div
+        id="expenseList"
+        class="expense-list"
+      ></div>
+
+    </div>
+
+  </div>
+
+
+  <!-- =========================
+       КНОПКА СМЕНЫ ТЕМЫ
+
+       Круглая кнопка закреплена
+       в правом нижнем углу экрана.
+       🌙 — включить тёмную тему
+       ☀️ — включить светлую тему
+       ========================= -->
+
+  <button
+    type="button"
+    class="theme-button"
+    id="themeButton"
+    title="Сменить тему"
+    aria-label="Сменить тему"
+  >
+    🌙
+  </button>
+
+
+  <script>
+
+    /* =========================
+       ПОЛУЧАЕМ ЭЛЕМЕНТЫ СТРАНИЦЫ
+       ========================= */
+
+    const amountInput =
+      document.getElementById("amount");
+
+    const categorySelect =
+      document.getElementById("category");
+
+    const dateInput =
+      document.getElementById("date");
+
+    const addButton =
+      document.getElementById("addButton");
+
+    const expenseList =
+      document.getElementById("expenseList");
+
+    const todayTotal =
+      document.getElementById("todayTotal");
+
+    const weekTotal =
+      document.getElementById("weekTotal");
+
+    const themeButton =
+      document.getElementById("themeButton");
+
+
+    /* =========================
+       ЗАГРУЖАЕМ РАСХОДЫ ИЗ localStorage
+
+       Если расходов раньше не было,
+       создаём пустой массив.
+       ========================= */
+
+    let expenses = [];
+
+    try {
+      const savedExpenses = localStorage.getItem("expenses");
+
+      if (savedExpenses) {
+        expenses = JSON.parse(savedExpenses);
+      }
+    } catch (error) {
+      console.error("Ошибка при загрузке расходов:", error);
+      expenses = [];
+      localStorage.removeItem("expenses");
+    }
+
+
+    /* =========================
+       ФУНКЦИЯ ДЛЯ СЕГОДНЯШНЕЙ ДАТЫ
+       ========================= */
+
+    function getTodayDate() {
+
+      const today = new Date();
+
+      const year = today.getFullYear();
+
+      const month =
+        String(today.getMonth() + 1).padStart(2, "0");
+
+      const day =
+        String(today.getDate()).padStart(2, "0");
+
+      return `${year}-${month}-${day}`;
+    }
+
+
+    /* Сразу ставим в поле сегодняшнюю дату */
+    dateInput.value = getTodayDate();
+
+
+    /* =========================
+       СОХРАНЕНИЕ РАСХОДОВ
+       ========================= */
+
+    function saveExpenses() {
+
+      localStorage.setItem(
+        "expenses",
+        JSON.stringify(expenses)
+      );
+
+    }
+
+
+    /* =========================
+       ДОБАВЛЕНИЕ РАСХОДА
+       ========================= */
+
+    function addExpense() {
+
+      /* Получаем введённые данные */
+      const amount =
+        parseFloat(amountInput.value);
+
+      const category =
+        categorySelect.value;
+
+      const date =
+        dateInput.value;
+
+
+      /* Проверяем сумму */
+      if (isNaN(amount) || amount <= 0) {
+
+        alert("Введите правильную сумму расхода.");
+
+        amountInput.focus();
+
+        return;
+      }
+
+
+      /* Проверяем дату */
+      if (!date) {
+
+        alert("Выберите дату.");
+
+        return;
+      }
+
+
+      /* Создаём новый расход */
+      const newExpense = {
+
+        id: Date.now(),
+
+        amount: amount,
+
+        category: category,
+
+        date: date
+
+      };
+
+
+      /* Добавляем расход в массив */
+      expenses.push(newExpense);
+
+
+      /* Сохраняем в браузере */
+      saveExpenses();
+
+
+      /* Обновляем список */
+      renderExpenses();
+
+
+      /* Очищаем поля после добавления */
+      amountInput.value = "";
+
+      categorySelect.selectedIndex = 0;
+
+      dateInput.value = getTodayDate();
+
+
+      /* Возвращаем курсор в поле суммы */
+      amountInput.focus();
+
+    }
+
+
+    /* =========================
+       УДАЛЕНИЕ РАСХОДА
+       ========================= */
+
+    function deleteExpense(id) {
+
+      expenses =
+        expenses.filter(function(expense) {
+
+          return expense.id !== id;
+
+        });
+
+
+      /* Сохраняем новый список */
+      saveExpenses();
+
+
+      /* Обновляем экран */
+      renderExpenses();
+
+    }
+
+
+    /* =========================
+       ФОРМАТ ДАТЫ
+
+       Например:
+       2026-08-22
+       превратится в:
+       22.08.2026
+       ========================= */
+
+    function formatDate(dateString) {
+
+      const parts =
+        dateString.split("-");
+
+      return `${parts[2]}.${parts[1]}.${parts[0]}`;
+
+    }
+
+
+    /* =========================
+       ФОРМАТ ДЕНЕГ
+
+       Например:
+       1500
+       станет:
+       1 500 ₽
+       ========================= */
+
+    function formatMoney(amount) {
+
+      return amount.toLocaleString(
+        "ru-RU",
+        {
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 2
+        }
+      ) + " ₽";
+
+    }
+
+
+    /* =========================
+       ПОДСЧЁТ РАСХОДОВ
+       ========================= */
+
+    function calculateTotals() {
+
+      const today =
+        getTodayDate();
+
+
+      let todaySum = 0;
+
+      let sevenDaysSum = 0;
+
+
+      /* Сегодняшняя дата без времени */
+      const todayDate =
+        new Date(today + "T00:00:00");
+
+
+      /* Определяем дату 6 дней назад.
+         Сегодня + 6 предыдущих дней
+         = последние 7 дней.
+      */
+
+      const sevenDaysAgo =
+        new Date(todayDate);
+
+      sevenDaysAgo.setDate(
+        todayDate.getDate() - 6
+      );
+
+
+      /* Проверяем каждый расход */
+      expenses.forEach(function(expense) {
+
+        const expenseDate =
+          new Date(
+            expense.date + "T00:00:00"
+          );
+
+
+        /* Если расход сделан сегодня */
+        if (expense.date === today) {
+
+          todaySum += expense.amount;
+
+        }
+
+
+        /* Если расход входит в последние 7 дней */
+        if (
+          expenseDate >= sevenDaysAgo &&
+          expenseDate <= todayDate
+        ) {
+
+          sevenDaysSum += expense.amount;
+
+        }
+
+      });
+
+
+      /* Показываем итоговые суммы */
+      todayTotal.textContent =
+        formatMoney(todaySum);
+
+      weekTotal.textContent =
+        formatMoney(sevenDaysSum);
+
+    }
+
+
+    /* =========================
+       ПОКАЗ СПИСКА РАСХОДОВ
+       ========================= */
+
+    function renderExpenses() {
+
+      /* Очищаем старый список */
+      expenseList.innerHTML = "";
+
+
+      /* Если расходов нет */
+      if (expenses.length === 0) {
+
+        expenseList.innerHTML =
+          '<div class="empty-message">Расходов пока нет.</div>';
+
+        calculateTotals();
+
+        return;
+      }
+
+
+      /* Делаем копию массива и сортируем.
+         Новые расходы будут сверху.
+      */
+
+      const sortedExpenses =
+        [...expenses].sort(function(a, b) {
+
+          if (a.date === b.date) {
+
+            return b.id - a.id;
+
+          }
+
+          return b.date.localeCompare(a.date);
+
+        });
+
+
+      /* Создаём карточку каждого расхода */
+      sortedExpenses.forEach(function(expense) {
+
+        const item =
+          document.createElement("div");
+
+        item.className =
+          "expense-item";
+
+
+        item.innerHTML = `
+
+          <div class="expense-info">
+
+            <div class="expense-category">
+              ${expense.category}
+            </div>
+
+            <div class="expense-details">
+              ${formatMoney(expense.amount)}
+              •
+              ${formatDate(expense.date)}
+            </div>
+
+          </div>
+
+          <button
+            class="delete-button"
+            onclick="deleteExpense(${expense.id})"
+          >
+            Удалить
+          </button>
+
+        `;
+
+
+        expenseList.appendChild(item);
+
+      });
+
+
+      /* После изменения списка
+         пересчитываем итоговые суммы.
+      */
+
+      calculateTotals();
+
+    }
+
+
+    /* =========================
+       КНОПКА "ДОБАВИТЬ РАСХОД"
+       ========================= */
+
+    addButton.addEventListener(
+      "click",
+      addExpense
+    );
+
+
+    /* =========================
+       ДОБАВЛЕНИЕ ПО КЛАВИШЕ ENTER
+
+       Можно ввести сумму
+       и нажать Enter.
+       ========================= */
+
+    amountInput.addEventListener(
+      "keydown",
+      function(event) {
+
+        if (event.key === "Enter") {
+
+          addExpense();
+
+        }
+
+      }
+    );
+
+
+    /* =========================
+       СВЕТЛАЯ И ТЁМНАЯ ТЕМА
+       ========================= */
+
+    /* Ставим правильный значок на кнопке:
+       🌙 — сейчас светлая тема
+       ☀️ — сейчас тёмная тема
+    */
+
+    function updateThemeButton() {
+
+      if (document.documentElement.classList.contains("dark")) {
+
+        themeButton.textContent = "☀️";
+
+      } else {
+
+        themeButton.textContent = "🌙";
+
+      }
+
+    }
+
+
+    /* При загрузке страницы
+       показываем значок по сохранённой теме.
+    */
+
+    updateThemeButton();
+
+
+    /* =========================
+       НАЖАТИЕ НА КНОПКУ ТЕМЫ
+       ========================= */
+
+    themeButton.addEventListener(
+      "click",
+      function() {
+
+        /* Включаем или выключаем тёмную тему */
+        document.documentElement.classList.toggle("dark");
+
+
+        /* Запоминаем выбор в localStorage */
+        if (document.documentElement.classList.contains("dark")) {
+
+          localStorage.setItem("theme", "dark");
+
+        } else {
+
+          localStorage.setItem("theme", "light");
+
+        }
+
+
+        /* Обновляем значок на кнопке */
+        updateThemeButton();
+
+      }
+    );
+
+
+    /* =========================
+       ЗАПУСК ПРИЛОЖЕНИЯ
+       ========================= */
+
+    /* При открытии страницы
+       сразу показываем все
+       сохранённые расходы.
+    */
+
+    renderExpenses();
+
+  </script>
+
+</body>
+</html>
