@@ -1,3 +1,102 @@
+<!DOCTYPE html>ф
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Мои личные расходы</title>
+  <meta name="description" content="Простое приложение для учёта личных расходов: категории, итоги за день и неделю, светлая и тёмная тема.">
+
+  <script>
+    if (localStorage.getItem("theme") === "dark") {
+      document.documentElement.classList.add("dark");
+    }
+  </script>
+
+  <link rel="stylesheet" href="css/landing.css">
+</head>
+<body>
+
+  <div class="wrap">
+
+    <header class="top">
+      <div class="logo">Мои личные расходы</div>
+      <a class="top-link" href="app.html">Открыть приложение</a>
+    </header>
+
+    <section class="hero">
+      <h1>Добро пожаловать</h1>
+      <p>Записываю расходы и учусь контролировать бюджет</p>
+      <p>
+        Это небольшой сайт для учёта трат. На главной — короткое знакомство,
+        в приложении — добавление расходов, список, итоги и сохранение данных
+        прямо в браузере.
+      </p>
+      <a class="cta" href="app.html">Перейти к расходам</a>
+    </section>
+
+    <section class="features">
+      <article class="feature">
+        <h2>Быстрый учёт</h2>
+        <p>Сумма, категория и дата. Новый расход появляется в списке сразу после добавления.</p>
+      </article>
+      <article class="feature">
+        <h2>Итоги</h2>
+        <p>Считаются расходы за сегодня и за последние 7 дней — без таблиц и сложных отчётов.</p>
+      </article>
+      <article class="feature">
+        <h2>На этом устройстве</h2>
+        <p>Данные и выбранная тема сохраняются в браузере. После обновления страницы ничего не теряется.</p>
+      </article>
+    </section>
+
+    <p class="footer">Учебный проект. Без сервера и регистрации: откройте index.html в браузере.</p>
+
+  </div>
+
+  <button
+    type="button"
+    class="theme-button"
+    id="themeButton"
+    title="Сменить тему"
+    aria-label="Сменить тему"
+  >
+    🌙
+  </button>
+
+  <script>
+
+    /* Значок на кнопке: 🌙 — светлая тема, ☀️ — тёмная */
+    function updateThemeButton() {
+
+      if (document.documentElement.classList.contains("dark")) {
+        themeButton.textContent = "☀️";
+      } else {
+        themeButton.textContent = "🌙";
+      }
+
+    }
+
+    const themeButton = document.getElementById("themeButton");
+
+    updateThemeButton();
+
+    themeButton.addEventListener("click", function () {
+
+      document.documentElement.classList.toggle("dark");
+
+      if (document.documentElement.classList.contains("dark")) {
+        localStorage.setItem("theme", "dark");
+      } else {
+        localStorage.setItem("theme", "light");
+      }
+
+      updateThemeButton();
+
+    });
+
+  </script>
+</body>
+</html>
 <!DOCTYPE html>
 <html lang="ru">
 <head>
